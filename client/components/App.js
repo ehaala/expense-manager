@@ -1,19 +1,52 @@
-import React, { Component } from 'react';
-import '../css/App.css';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import axios from 'axios';
+import Add from './Add';
+import Update from './Update';
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
-    );
+export default class App extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      selectedDay:'Mon',
+      data: []
+    };
+
+    this.getData = this.getData.bind(this);
   }
-}
 
-export default App;
+  componentDidMount() {
+    this.getData(this, 'Mon');
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.getData(this, 'Mon');
+  }
+
+  getData(ev, day){
+    axios.get('/getAll?day='+day)
+      .then(function(response) {
+        ev.setState({data: response.data});
+        ev.setState({selectedDay: parseInt(day)})
+      });
+  }
+  render() {
+      return (
+        <div>
+          <Add selectedDay={this.state.selectedDay} />
+          <table>
+            <thead>
+              <tr><th></th><th className='desc-col'>Description</th><th className='button-col'>Time (Hours)</th><th className='button-col'>Day</th><th className='button-col'>Update</th></tr>
+            </thead>
+            <tbody>
+              {
+                this.state.data.map(function(task){
+                  return  <tr><td className='counterCell'></td><td className='desc-col'>{task.description}</td><td className='button-col'>{task.time}</td><td className='button-col'>{task.day}</td><td className='button-col'><Update task={task} /></td></tr>
+                })
+              }
+              </tbody>
+  </table>
+        </div>
+      );
+    }
+}
